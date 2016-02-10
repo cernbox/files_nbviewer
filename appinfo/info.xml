@@ -1,0 +1,11 @@
+<?xml version="1.0"?> 
+<info>
+	<id>files_nbviewer</id>
+	<name>CERNBox NB Viewer</name>
+	<description>This application integrates the IPython/Jupyter Notebook framework into CERNBox files application</description>
+	<licence>AGPL</licence>
+	<author>Nadir Roman Guerrero</author>
+	<requiremin>8.2.0</requiremin>
+	<shipped>true</shipped>
+	<default_enable/>
+</info>
