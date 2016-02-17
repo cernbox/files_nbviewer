@@ -40,7 +40,6 @@ function openFile(directory, file)
 	if(mainDiv.length < 1)
 	{
 		mainDiv = $('<div id="nbviewer"></div>');
-		//mainDiv.css('all', 'unset');
 		mainDiv.css('position', 'absolute');
 		mainDiv.css('top', '0');
 		mainDiv.css('left', '0');
