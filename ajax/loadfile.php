@@ -4,6 +4,8 @@
 OCP\JSON::checkLoggedIn();
 OCP\JSON::callCheck();
 
+\OC::$server->getSession()->close();
+
 // Set the session key for the file we are about to edit.
 $dir = isset($_GET['dir']) ? $_GET['dir'] : '';
 $filename = isset($_GET['file']) ? $_GET['file'] : '';

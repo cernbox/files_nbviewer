@@ -9,8 +9,11 @@ function loadFile(checkResult, file, dir)
 		{
 			if(result.status === 'success')
 			{
-				$('#nbviewer-frame').contents().find('html').html(result.data.content);
 				$('#nbviewer-loader').remove();
+				var iFrame = $('#nbviewer-frame');
+                var doc = iFrame[0].contentDocument || iFrame[0].contentWindow.document;
+                doc.write(result.data.content);
+                doc.close();
 			}
 			else
 			{
@@ -57,6 +60,7 @@ function openFile(directory, file)
 		
 		mainDiv.append(frame);
 		$('#content').append(mainDiv);
+		//$(document.body).append(mainDiv);
 	}
 	
 	var loadingImg = $('<div id="nbviewer-loader"></div>');
