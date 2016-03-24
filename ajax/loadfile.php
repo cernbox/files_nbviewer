@@ -9,9 +9,20 @@ OCP\JSON::callCheck();
 // Set the session key for the file we are about to edit.
 $dir = isset($_GET['dir']) ? $_GET['dir'] : '';
 $filename = isset($_GET['file']) ? $_GET['file'] : '';
+$token = isset($_GET['token']) ? $_GET['token'] : '';
 if(!empty($filename))
 {
         header('Content-Type: text/plain');
+        
+        if(!empty($token))
+        {
+        	$linkItem = \OCP\Share::getShareByToken($token, false);
+        	$owner = $linkItem['uid_owner'];
+        	\OC\Files\Filesystem::init($owner, '/' . $owner . '/files');
+        	$dir = '/' . \OC\Files\Filesystem::getPath($linkItem['file_source']);
+        	$dir = rtrim($dir, '/');
+        }
+        
         $path = $dir.'/'.$filename;
         $filecontents = \OC\Files\Filesystem::file_get_contents($path);
 

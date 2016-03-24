@@ -1,42 +1,104 @@
-function loadFile(checkResult, file, dir)
+function closePublicFileCallback()
 {
-	if (checkResult.status === 'success') 
+	$('#imgframe').empty();
+	$('#imgframe').text('Reloading...');
+	window.location.reload();
+}
+
+function loadFile(file, dir)
+{
+	var url = OC.filePath('files_nbviewer', 'ajax', 'loadfile.php') + "?file=" + encodeURIComponent(file) 
+		+ "&dir=" + encodeURIComponent(dir) + "&requesttoken=" + encodeURIComponent(oc_requesttoken);
+	
+	if($('#isPublic').attr('value') == '1')
 	{
-		var url = OC.filePath('files_nbviewer', 'ajax', 'loadfile.php') + "?file=" + encodeURIComponent(file) 
-			+ "&dir=" + encodeURIComponent(dir) + "&requesttoken=" + encodeURIComponent(oc_requesttoken);
-		
-		$.get(url).done(function(result)
+		url = url + "&token=" + encodeURIComponent($('#sharingToken').attr('value'));
+	}
+	
+	$.get(url).done(function(result)
+	{
+		if(result.status === 'success')
 		{
-			if(result.status === 'success')
-			{
-				$('#nbviewer-loader').remove();
-				var iFrame = $('#nbviewer-frame');
-                var doc = iFrame[0].contentDocument || iFrame[0].contentWindow.document;
-                doc.write(result.data.content);
-                doc.close();
-			}
-			else
-			{
-				window.alert('There was a problem when loading your notebook: ' + result.data.message);
-			}
-		});
-	}
-	else
+			$('#nbviewer-loader').remove();
+			var iFrame = $('#nbviewer-frame');
+            var doc = iFrame[0].contentDocument || iFrame[0].contentWindow.document;
+            doc.write(result.data.content);
+            doc.close();
+		}
+		else
+		{
+			window.alert('There was a problem when loading your notebook: ' + result.data.message);
+			closeFile();
+		}
+	});
+}
+
+function loadPublicFile(token)
+{
+	var url = OC.filePath('files_nbviewer', 'ajax', 'loadpublicfile.php') + "?token=" + encodeURIComponent(token) 
+	+ "&requesttoken=" + encodeURIComponent(oc_requesttoken);
+
+	$.get(url).done(function(result)
 	{
-		window.alert('The file you tried to open does not meet the requirements to be loaded: ' + checkResult.data.message);
-	}
+		if(result.status === 'success')
+		{
+			$('#nbviewer-loader').remove();
+			var iFrame = $('#nbviewer-frame');
+	        var doc = iFrame[0].contentDocument || iFrame[0].contentWindow.document;
+	        doc.write(result.data.content);
+	        doc.close();
+		}
+		else
+		{
+			window.alert('There was a problem when loading your notebook: ' + result.data.message);
+			closeFile(closePublicFileCallback);
+		}
+	});
 }
 
 function checkFile(directory, file)
 {
-	var sizeURL = OC.filePath('files_nbviewer', 'ajax', 'canbeopen.php') + "?file=" + file + "&dir=" + directory;
+	var sizeURL = OC.filePath('files_nbviewer', 'ajax', 'canbeopen.php') + "?file=" + encodeURIComponent(file) + "&dir=" + encodeURIComponent(directory);
+	if($('#isPublic').attr('value') == '1')
+	{
+		sizeURL = sizeURL + "&token=" + encodeURIComponent($('#sharingToken').attr('value'));
+	}
+	
 	$.get(sizeURL)
 	.done(function(result){
-		loadFile(result, file, directory);
+		if(result.status === 'success')
+		{
+			loadFile(file, directory);
+		}
+		else
+		{
+			window.alert('The file you tried to open does not meet the requirements to be loaded: ' + result.data.message);
+			closeFile();
+		}
 	})
 }
 
-function openFile(directory, file)
+function checkPublicFile(token)
+{
+	var sizeURL = OC.filePath('files_nbviewer', 'ajax', 'canbeopenpublic.php') + "?token=" + encodeURIComponent(token);
+	$.get(sizeURL)
+	.done(function(result){
+		if(result.status === 'success')
+		{
+			loadPublicFile(token);
+		}
+		else
+		{
+			window.alert('The file you tried to open does not meet the requirements to be loaded: ' + result.data.message);
+			closeFile(closePublicFileCallback());
+		}
+	})
+}
+
+/**
+ * Set up all html elements needed to display the notebook
+ */
+function setUpEditor(closeCallBack)
 {
 	isNotebookOpen =  true;
 	var mainDiv = $('#nbviewer');
@@ -87,24 +149,51 @@ function openFile(directory, file)
 	closeImgContent.attr('src', closeImg);
 	closeButton.append(closeImgContent);
 	
-	closeButton.click(function()
-			{
-				if(isNotebookOpen)
-				{
-					$('#nbviewer').remove();
-					$('#app-navigation').show();
-					$('#app-content').show();
-					isNotebookOpen = false;
-				}
-			});
+	closeButton.click(function() { closeFile(closeCallBack); });
 	
 	$('#app-navigation').hide();
 	$('#app-content').hide();
 	
 	mainDiv.append(loadingImg);
 	mainDiv.append(closeButton);
-	
+}
+
+/**
+ * Open the notebook viewer and displays the notebook given the directory where it belongs and it's name
+ * @param directory
+ * @param file
+ */
+function openFile(directory, file)
+{
+	setUpEditor();
 	checkFile(directory, file);
+}
+
+/**
+ * Open the notebook viewer and displays the notebook given by a publically shared by link
+ * @param token
+ */
+function openPublicFile(token)
+{
+	setUpEditor(closePublicFileCallback);
+	checkPublicFile(token);
+}
+
+
+function closeFile(callback)
+{
+	if(isNotebookOpen)
+	{
+		$('#nbviewer').remove();
+		$('#app-navigation').show();
+		$('#app-content').show();
+		isNotebookOpen = false;
+		
+		if(callback)
+		{
+			callback();
+		}
+	}
 }
 
 var isNotebookOpen = false;
