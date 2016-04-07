@@ -15,6 +15,7 @@ if(!empty($token))
 	$linkItem = \OCP\Share::getShareByToken($token, false);
 	$owner = $linkItem['uid_owner'];
 	
+	\OC\Files\Filesystem::tearDown();
 	\OC\Files\Filesystem::init($owner, '/' . $owner . '/files');
 	
 	$path = '/' . \OC\Files\Filesystem::getPath($linkItem['file_source']);
