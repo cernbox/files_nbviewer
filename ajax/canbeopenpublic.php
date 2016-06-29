@@ -4,12 +4,12 @@
 $token = isset($_GET['token']) ? $_GET['token'] : '';
 if(!empty($token)) {
 
-	$linkItem = \OCP\Share::getShareByToken($token, false);
-	$owner = $linkItem['uid_owner'];
+	$linkItem = \OC::$server->getShareManager()->getShareByToken($token);
+	$owner = $linkItem->getShareOwner();
 
 	\OC\Files\Filesystem::init($owner, '/' . $owner . '/files');
 
-	$path = '/' . \OC\Files\Filesystem::getPath($linkItem['file_source']);
+	$path = '/' . \OC\Files\Filesystem::getPath($linkItem->getNodeId());
 
 	$maxsize = \OCP\Config::getSystemValue("max_size_notebook_file", 4194304); // default of 4MB
 	$size = \OC\Files\Filesystem::filesize($path);

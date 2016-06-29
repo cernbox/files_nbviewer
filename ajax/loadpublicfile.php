@@ -12,13 +12,13 @@ if(!empty($token))
 {
 	header('Content-Type: text/plain');
 	
-	$linkItem = \OCP\Share::getShareByToken($token, false);
-	$owner = $linkItem['uid_owner'];
+	$linkItem = \OC::$server->getShareManager()->getShareByToken($token);
+	$owner = $linkItem->getShareOwner();
 	
 	\OC\Files\Filesystem::tearDown();
 	\OC\Files\Filesystem::init($owner, '/' . $owner . '/files');
 	
-	$path = '/' . \OC\Files\Filesystem::getPath($linkItem['file_source']);
+	$path = '/' . \OC\Files\Filesystem::getPath($linkItem->getNodeId());
 	
 	$filecontents = \OC\Files\Filesystem::file_get_contents($path);
 
